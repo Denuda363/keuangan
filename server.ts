@@ -248,12 +248,13 @@ async function start() {
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (!isProduction) {
-    // Mount Vite in middleware mode for hot development
+    // Mount Vite in middleware mode with HMR explicitly disabled
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
         host: '0.0.0.0',
         port: PORT,
+        hmr: false,
       },
       appType: 'spa',
     });
