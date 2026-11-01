@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, ArrowUpRight, ArrowDownRight, AlertCircle, RefreshCw, Lock } from 'lucide-react';
+import { Plus, Edit2, Trash2, ArrowUpRight, ArrowDownRight, AlertCircle, Lock, Search } from 'lucide-react';
 import { Category, TransactionType } from '../types/finance';
 import { useFinance } from '../context/FinanceContext';
 import { CategoryIcon } from './CategoryIcon';
@@ -14,7 +14,6 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ onOpenCategory
     expenseCategories,
     deleteCategory,
     transactions,
-    resetToDefaultData,
     isAdmin,
     openPinModal,
   } = useFinance();
@@ -56,79 +55,64 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ onOpenCategory
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-20 md:pb-6">
+    <div className="space-y-4 sm:space-y-5 pb-20 md:pb-6">
       {/* Header bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            Kustomisasi Kategori Kas
+            Kategori Kas
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Daftar pos uang masuk dan uang keluar untuk klasifikasi arus kas.
+            Daftar pos uang masuk dan uang keluar untuk klasifikasi arus keuangan.
           </p>
         </div>
 
-        <button
-          onClick={handleAddCategoryClick}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-xs transition-all shrink-0 whitespace-nowrap cursor-pointer min-h-[40px]"
-        >
-          {isAdmin ? <Plus className="w-4 h-4" /> : <Lock className="w-3.5 h-3.5 text-amber-300" />}
-          <span>
-            {isAdmin
-              ? `+ Tambah Kategori ${activeTab === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'}`
-              : `Tambah Kategori (PIN)`}
-          </span>
-        </button>
+        {isAdmin ? (
+          <button
+            onClick={handleAddCategoryClick}
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-2xs transition-all shrink-0 cursor-pointer min-h-[40px]"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Tambah Kategori {activeTab === 'pemasukan' ? 'Masuk' : 'Keluar'}</span>
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-100 border border-slate-200/80 rounded-xl px-3 py-1.5 text-xs text-slate-600">
+            <Lock className="w-3.5 h-3.5 text-slate-400" />
+            <span>Mode Lihat Saja</span>
+            <span aria-hidden="true">·</span>
+            <button
+              onClick={() => openPinModal('Masukkan PIN Admin untuk menambah atau mengubah kategori.')}
+              className="font-semibold text-slate-900 hover:underline cursor-pointer"
+            >
+              Buka Akses Admin
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Mode Pengguna Notice Banner */}
-      {!isAdmin && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs">
-              <Lock className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-amber-900">
-                Mode Pengguna (Hanya Lihat Kategori)
-              </p>
-              <p className="text-[11px] text-amber-700">
-                Anda dapat melihat seluruh daftar kategori yang aktif. Masuk ke Mode Admin untuk menambah, mengubah, atau menghapus kategori.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => openPinModal('Masukkan PIN Admin untuk mengelola kategori.')}
-            className="self-start sm:self-auto px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all whitespace-nowrap cursor-pointer"
-          >
-            Buka Akses Admin
-          </button>
-        </div>
-      )}
-
       {deleteError && (
-        <div className="flex items-center gap-2 p-3 text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl">
+        <div className="flex items-center gap-2 p-3 text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200/80 rounded-xl">
           <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
           <span>{deleteError}</span>
         </div>
       )}
 
       {/* Tabs & Search Filter */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
+      <div className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Interactive Segmented Tabs */}
-        <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-full sm:w-fit">
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-medium text-slate-600 w-full sm:w-auto">
           <button
             onClick={() => {
               setActiveTab('pengeluaran');
               setDeleteError(null);
             }}
-            className={`flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer min-h-[38px] ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
               activeTab === 'pengeluaran'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-rose-700 font-semibold shadow-2xs'
+                : 'hover:text-slate-900'
             }`}
           >
-            <ArrowUpRight className="w-3.5 h-3.5 text-rose-500" />
+            <ArrowUpRight className="w-3.5 h-3.5" />
             <span>Pengeluaran ({expenseCategories.length})</span>
           </button>
           <button
@@ -136,25 +120,26 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ onOpenCategory
               setActiveTab('pemasukan');
               setDeleteError(null);
             }}
-            className={`flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer min-h-[38px] ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
               activeTab === 'pemasukan'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-emerald-700 font-semibold shadow-2xs'
+                : 'hover:text-slate-900'
             }`}
           >
-            <ArrowDownRight className="w-3.5 h-3.5 text-emerald-500" />
+            <ArrowDownRight className="w-3.5 h-3.5" />
             <span>Pemasukan ({incomeCategories.length})</span>
           </button>
         </div>
 
         {/* Search */}
-        <div className="w-full sm:w-64">
+        <div className="relative w-full sm:w-64">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Cari kategori..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-slate-900"
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-slate-900 transition-colors"
           />
         </div>
       </div>
@@ -167,27 +152,27 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ onOpenCategory
           return (
             <div
               key={cat.id}
-              className="p-4 bg-white border border-slate-200 hover:border-slate-300 rounded-2xl shadow-2xs transition-all flex flex-col justify-between group"
+              className="p-4 bg-white border border-slate-200/80 hover:border-slate-300 rounded-2xl shadow-2xs transition-all flex flex-col justify-between"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-2xs"
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-2xs"
                     style={{ backgroundColor: cat.color }}
                   >
-                    <CategoryIcon name={cat.icon} size={18} className="text-white" />
+                    <CategoryIcon name={cat.icon} size={16} className="text-white" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-900 truncate">{cat.name}</p>
+                    <p className="text-xs font-semibold text-slate-900 truncate">{cat.name}</p>
                     <p className="text-[11px] text-slate-400 mt-0.5">
-                      {usageCount} transaksi kas terkait
+                      {usageCount} transaksi terkait
                     </p>
                   </div>
                 </div>
 
                 {/* Action buttons (Only for Admin) */}
                 {isAdmin && (
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-0.5 shrink-0">
                     <button
                       onClick={() => onOpenCategoryModal(cat.type, cat)}
                       className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
@@ -227,45 +212,16 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ onOpenCategory
             <p className="text-xs text-slate-500 mt-1">
               Coba kata kunci lain atau tambahkan kategori baru.
             </p>
-            {isAdmin ? (
+            {isAdmin && (
               <button
                 onClick={() => onOpenCategoryModal(activeTab)}
-                className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-slate-900 rounded-xl hover:bg-slate-800 cursor-pointer min-h-[40px]"
+                className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-slate-900 rounded-xl hover:bg-slate-800 cursor-pointer min-h-[40px]"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Tambah Sekarang</span>
               </button>
-            ) : (
-              <button
-                onClick={() => openPinModal('Masukkan PIN Admin untuk menambah kategori.')}
-                className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-slate-900 rounded-xl hover:bg-slate-800 cursor-pointer min-h-[40px]"
-              >
-                <Lock className="w-3.5 h-3.5 text-amber-300" />
-                <span>Masuk Admin untuk Tambah</span>
-              </button>
             )}
           </div>
-        )}
-      </div>
-
-      {/* Helpful Tip Footer */}
-      <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
-        <div>
-          <span className="font-semibold text-slate-800">Tips Kategori Kas: </span>
-          Kategori yang Anda buat langsung tersinkron ke database Firebase dan laporan Excel/PDF.
-        </div>
-        {isAdmin && (
-          <button
-            onClick={() => {
-              if (confirm('Kembalikan semua kategori ke standar default awal?')) {
-                resetToDefaultData();
-              }
-            }}
-            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-800 transition-colors shrink-0 cursor-pointer"
-          >
-            <RefreshCw className="w-3 h-3" />
-            <span>Reset ke Kategori Awal</span>
-          </button>
         )}
       </div>
     </div>

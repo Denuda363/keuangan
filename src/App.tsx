@@ -162,28 +162,6 @@ function MainApp() {
         onClose={closePinSettingsModal}
       />
 
-      {/* Floating Action Button for Mobile screens */}
-      <div className="md:hidden fixed bottom-18 right-4 z-30">
-        <button
-          onClick={() => handleOpenTransactionModal('pengeluaran')}
-          className={`flex items-center gap-2 px-4 py-3 text-white rounded-full shadow-xl active:scale-95 transition-all text-xs font-bold cursor-pointer ${
-            isAdmin
-              ? 'bg-slate-900 hover:bg-slate-800'
-              : 'bg-slate-800 hover:bg-slate-700 border border-slate-700'
-          }`}
-          aria-label={isAdmin ? 'Catat Kas Baru' : 'Masuk Admin untuk Catat Kas'}
-        >
-          {isAdmin ? (
-            <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-              +
-            </span>
-          ) : (
-            <Lock className="w-4 h-4 text-amber-300" />
-          )}
-          <span>{isAdmin ? 'Catat Kas' : 'Catat Kas (PIN)'}</span>
-        </button>
-      </div>
-
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-5 text-center text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
