@@ -191,6 +191,7 @@ export function exportMonthlyReportToPdf({
       isInc ? '+ Masuk' : '- Keluar',
       cat?.name || 'Kategori',
       acc?.name || 'Kas',
+      tx.receiptUrl ? 'Ada' : '-',
       tx.note || '-',
       (isInc ? '+ ' : '- ') + formatRupiah(tx.amount),
     ];
@@ -198,7 +199,7 @@ export function exportMonthlyReportToPdf({
 
   autoTable(doc, {
     startY: finalCatY + 3,
-    head: [['No', 'Tanggal', 'Tipe', 'Kategori', 'Akun', 'Catatan / Deskripsi', 'Jumlah']],
+    head: [['No', 'Tanggal', 'Tipe', 'Kategori', 'Akun', 'Nota', 'Catatan', 'Jumlah']],
     body: txTableData,
     theme: 'striped',
     styles: {
@@ -217,11 +218,12 @@ export function exportMonthlyReportToPdf({
     columnStyles: {
       0: { cellWidth: 8, halign: 'center' },
       1: { cellWidth: 20 },
-      2: { cellWidth: 18, fontStyle: 'bold' },
-      3: { cellWidth: 35 },
-      4: { cellWidth: 22 },
-      5: { cellWidth: 49 },
-      6: { cellWidth: 30, halign: 'right', fontStyle: 'bold' },
+      2: { cellWidth: 17, fontStyle: 'bold' },
+      3: { cellWidth: 32 },
+      4: { cellWidth: 20 },
+      5: { cellWidth: 15, halign: 'center' },
+      6: { cellWidth: 40 },
+      7: { cellWidth: 30, halign: 'right', fontStyle: 'bold' },
     },
     didParseCell: (data) => {
       if (data.section === 'body' && data.column.index === 2) {
@@ -231,7 +233,13 @@ export function exportMonthlyReportToPdf({
           data.cell.styles.textColor = [225, 29, 72]; // rose-600
         }
       }
-      if (data.section === 'body' && data.column.index === 6) {
+      if (data.section === 'body' && data.column.index === 5) {
+        if (data.cell.raw === 'Ada') {
+          data.cell.styles.textColor = [16, 185, 129]; // emerald-600
+          data.cell.styles.fontStyle = 'bold';
+        }
+      }
+      if (data.section === 'body' && data.column.index === 7) {
         const str = String(data.cell.raw || '');
         if (str.startsWith('+')) {
           data.cell.styles.textColor = [5, 150, 105];

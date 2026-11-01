@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { X, ArrowDownRight, ArrowUpRight, Plus, Calendar, Wallet } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, ArrowDownRight, ArrowUpRight, Plus, Calendar, Wallet, Camera, UploadCloud, Trash2, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types/finance';
 import { useFinance } from '../context/FinanceContext';
 import { formatRupiah, parseRupiahInput } from '../utils/formatters';
+import { compressReceiptImage } from '../utils/imageCompressor';
 import { CategoryIcon } from './CategoryIcon';
 
 interface TransactionModalProps {
@@ -28,6 +29,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     updateTransaction,
   } = useFinance();
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [type, setType] = useState<TransactionType>(initialType);
   const [rawAmount, setRawAmount] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>('');
@@ -36,6 +38,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [time, setTime] = useState<string>('');
   const [note, setNote] = useState<string>('');
   const [recipientOrPayer, setRecipientOrPayer] = useState<string>('');
+  const [receiptUrl, setReceiptUrl] = useState<string | undefined>(undefined);
+  const [receiptSizeKb, setReceiptSizeKb] = useState<number | null>(null);
+  const [isCompressing, setIsCompressing] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -51,6 +56,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setTime(editingTransaction.time || '12:00');
       setNote(editingTransaction.note || '');
       setRecipientOrPayer(editingTransaction.recipientOrPayer || '');
+      setReceiptUrl(editingTransaction.receiptUrl || undefined);
+      setReceiptSizeKb(null);
     } else {
       const today = new Date();
       const yyyy = today.getFullYear();
@@ -65,6 +72,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setTime(`${hh}:${min}`);
       setNote('');
       setRecipientOrPayer('');
+      setReceiptUrl(undefined);
+      setReceiptSizeKb(null);
 
       const relevantCats = initialType === 'pemasukan' ? incomeCategories : expenseCategories;
       if (relevantCats.length > 0) {
@@ -76,7 +85,34 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     }
     setErrorMsg('');
     setIsSubmitting(false);
+    setIsCompressing(false);
   }, [editingTransaction, initialType, isOpen]);
+
+  const handleReceiptFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsCompressing(true);
+    setErrorMsg('');
+    try {
+      const { dataUrl, fileSizeKb } = await compressReceiptImage(file);
+      setReceiptUrl(dataUrl);
+      setReceiptSizeKb(fileSizeKb);
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Gagal mengunggah foto nota.');
+    } finally {
+      setIsCompressing(false);
+      // Reset input so same file can be re-selected if desired
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveReceipt = () => {
+    setReceiptUrl(undefined);
+    setReceiptSizeKb(null);
+  };
 
   useEffect(() => {
     const relevantCats = type === 'pemasukan' ? incomeCategories : expenseCategories;
@@ -132,6 +168,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           time,
           note: note.trim(),
           recipientOrPayer: recipientOrPayer.trim(),
+          receiptUrl: receiptUrl || '',
         });
       } else {
         await addTransaction({
@@ -143,6 +180,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           time,
           note: note.trim(),
           recipientOrPayer: recipientOrPayer.trim(),
+          receiptUrl: receiptUrl || undefined,
         });
       }
       onClose();
@@ -365,6 +403,90 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               onChange={(e) => setRecipientOrPayer(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-hidden focus:border-slate-900 focus:bg-white"
             />
+          </div>
+
+          {/* Upload Bukti Nota / Struk Transaksi */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-slate-700">
+                Bukti Nota / Struk Transaksi{' '}
+                <span className="text-[11px] font-normal text-slate-400">(Opsional)</span>
+              </label>
+              {receiptSizeKb && (
+                <span className="text-[10px] text-emerald-600 font-semibold">
+                  Tersimpan (~{receiptSizeKb} KB)
+                </span>
+              )}
+            </div>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleReceiptFile}
+              accept="image/*"
+              className="hidden"
+            />
+
+            {isCompressing ? (
+              <div className="p-3.5 border border-dashed border-slate-300 rounded-xl bg-slate-50 flex items-center justify-center gap-2 text-xs text-slate-600">
+                <Loader2 className="w-4 h-4 animate-spin text-slate-800" />
+                <span>Mengompres & memproses foto nota...</span>
+              </div>
+            ) : receiptUrl ? (
+              <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <img
+                    src={receiptUrl}
+                    alt="Nota Preview"
+                    className="w-12 h-12 object-cover rounded-lg border border-slate-200 shadow-2xs shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 truncate">
+                      Foto Nota Terlampir
+                    </p>
+                    <p className="text-[11px] text-emerald-600 font-medium">
+                      Siap disimpan ke database
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer transition-colors"
+                  >
+                    Ganti
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveReceipt}
+                    className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                    title="Hapus foto nota"
+                    aria-label="Hapus nota"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="p-3.5 border border-dashed border-slate-300 hover:border-slate-400 bg-slate-50/70 hover:bg-slate-100/70 rounded-xl flex items-center justify-center gap-2.5 cursor-pointer transition-colors group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 group-hover:text-slate-800 group-hover:scale-105 transition-all shadow-2xs">
+                  <Camera className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-semibold text-slate-800">
+                    Ambil Foto / Unggah Bukti Nota
+                  </p>
+                  <p className="text-[10px] text-slate-400">
+                    Format JPG, PNG, atau WebP (Kamera / Galeri HP)
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}

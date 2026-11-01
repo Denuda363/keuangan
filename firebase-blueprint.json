@@ -28,6 +28,7 @@
         "accountId": { "type": "string", "maxLength": 128 },
         "note": { "type": "string", "maxLength": 500 },
         "recipientOrPayer": { "type": "string", "maxLength": 128 },
+        "receiptUrl": { "type": "string", "maxLength": 500000 },
         "createdAt": { "type": "number" }
       },
       "required": ["id", "userId", "date", "type", "amount", "categoryId", "accountId", "createdAt"]

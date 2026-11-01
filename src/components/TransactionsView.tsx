@@ -7,6 +7,7 @@ import {
   Edit2,
   Trash2,
   ArrowUpDown,
+  FileText,
 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { formatRupiah, formatTanggalIndo } from '../utils/formatters';
@@ -15,9 +16,13 @@ import { Transaction, TransactionType } from '../types/finance';
 
 interface TransactionsViewProps {
   onOpenTransactionModal: (type: TransactionType, tx?: Transaction) => void;
+  onViewReceipt?: (tx: Transaction) => void;
 }
 
-export const TransactionsView: React.FC<TransactionsViewProps> = ({ onOpenTransactionModal }) => {
+export const TransactionsView: React.FC<TransactionsViewProps> = ({
+  onOpenTransactionModal,
+  onViewReceipt,
+}) => {
   const { transactions, categories, accounts, deleteTransaction } = useFinance();
 
   const [typeFilter, setTypeFilter] = useState<'all' | TransactionType>('all');
@@ -197,6 +202,16 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({ onOpenTransa
                         >
                           {isInc ? 'Masuk' : 'Keluar'}
                         </span>
+                        {tx.receiptUrl && (
+                          <button
+                            onClick={() => onViewReceipt && onViewReceipt(tx)}
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 text-[9px] font-semibold cursor-pointer transition-colors"
+                            title="Lihat Bukti Nota"
+                          >
+                            <FileText className="w-2.5 h-2.5 text-blue-600" />
+                            <span>Nota</span>
+                          </button>
+                        )}
                       </div>
                       <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5 truncate">
                         <span>{formatTanggalIndo(tx.date)}</span>
@@ -252,6 +267,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({ onOpenTransa
                 <th className="py-3 px-4">Kategori</th>
                 <th className="py-3 px-4">Akun</th>
                 <th className="py-3 px-4">Catatan / Penerima</th>
+                <th className="py-3 px-4 text-center w-16">Nota</th>
                 <th className="py-3 px-4 text-right">Nominal</th>
                 <th className="py-3 px-4 text-center w-20">Aksi</th>
               </tr>
@@ -259,7 +275,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({ onOpenTransa
             <tbody className="divide-y divide-slate-100">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
                     Tidak ada transaksi yang sesuai kriteria filter.
                   </td>
                 </tr>
@@ -320,6 +336,20 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({ onOpenTransa
                             {isInc ? 'Dari: ' : 'Ke: '}
                             {tx.recipientOrPayer}
                           </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        {tx.receiptUrl ? (
+                          <button
+                            onClick={() => onViewReceipt && onViewReceipt(tx)}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-semibold cursor-pointer transition-colors shadow-2xs"
+                            title="Lihat Bukti Nota Transaksi"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-blue-600" />
+                            <span>Nota</span>
+                          </button>
+                        ) : (
+                          <span className="text-slate-300">-</span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-right font-mono font-bold whitespace-nowrap">

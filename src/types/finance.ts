@@ -30,6 +30,7 @@ export interface Transaction {
   accountId: string;
   note: string;
   recipientOrPayer?: string;
+  receiptUrl?: string;
   createdAt: number;
 }
 

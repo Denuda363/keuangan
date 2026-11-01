@@ -18,13 +18,17 @@ import { formatBulanTahun, formatRupiah, formatTanggalIndo, NAMA_BULAN_INDONESIA
 import { exportMonthlyReportToExcel } from '../utils/exportExcel';
 import { exportMonthlyReportToPdf } from '../utils/exportPdf';
 import { CategoryIcon } from './CategoryIcon';
-import { TransactionType } from '../types/finance';
+import { Transaction, TransactionType } from '../types/finance';
 
 interface MonthlyReportViewProps {
   onOpenTransactionModal: (type: TransactionType) => void;
+  onViewReceipt?: (tx: Transaction) => void;
 }
 
-export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ onOpenTransactionModal }) => {
+export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({
+  onOpenTransactionModal,
+  onViewReceipt,
+}) => {
   const {
     currentMonth,
     currentYear,
@@ -472,9 +476,21 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ onOpenTran
                       <CategoryIcon name={cat?.icon || 'Tag'} size={16} className="text-white" />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-900 truncate">
-                        {tx.note || cat?.name}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs font-bold text-slate-900 truncate">
+                          {tx.note || cat?.name}
+                        </p>
+                        {tx.receiptUrl && (
+                          <button
+                            onClick={() => onViewReceipt && onViewReceipt(tx)}
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 text-[9px] font-semibold cursor-pointer transition-colors"
+                            title="Lihat Bukti Nota"
+                          >
+                            <FileText className="w-2.5 h-2.5 text-blue-600" />
+                            <span>Nota</span>
+                          </button>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5 truncate">
                         <span>{formatTanggalIndo(tx.date)}</span>
                         <span aria-hidden="true">·</span>
@@ -506,13 +522,14 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ onOpenTran
                 <th className="py-3 px-4">Kategori</th>
                 <th className="py-3 px-4">Akun / Rekening</th>
                 <th className="py-3 px-4">Keterangan</th>
+                <th className="py-3 px-4 text-center w-16">Nota</th>
                 <th className="py-3 px-4 text-right">Nominal</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-slate-400">
+                  <td colSpan={8} className="py-10 text-center text-slate-400">
                     Tidak ada transaksi kas di bulan ini.
                   </td>
                 </tr>
@@ -573,6 +590,20 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({ onOpenTran
                             {isInc ? 'Dari: ' : 'Untuk: '}
                             {tx.recipientOrPayer}
                           </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        {tx.receiptUrl ? (
+                          <button
+                            onClick={() => onViewReceipt && onViewReceipt(tx)}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-semibold cursor-pointer transition-colors shadow-2xs"
+                            title="Lihat Bukti Nota Transaksi"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-blue-600" />
+                            <span>Nota</span>
+                          </button>
+                        ) : (
+                          <span className="text-slate-300">-</span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-right font-mono font-bold whitespace-nowrap">

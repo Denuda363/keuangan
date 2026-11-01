@@ -15,6 +15,7 @@ import {
   Smartphone,
   Cloud,
   CheckCircle2,
+  FileText,
 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { formatRupiah, formatTanggalIndo, formatBulanTahun, NAMA_BULAN_INDONESIA } from '../utils/formatters';
@@ -26,6 +27,7 @@ interface DashboardViewProps {
   onNavigateToReports: () => void;
   onNavigateToTransactions: () => void;
   onNavigateToCategories: () => void;
+  onViewReceipt?: (tx: Transaction) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -33,6 +35,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigateToReports,
   onNavigateToTransactions,
   onNavigateToCategories,
+  onViewReceipt,
 }) => {
   const {
     transactions,
@@ -391,6 +394,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         >
                           {isInc ? 'Masuk' : 'Keluar'}
                         </span>
+                        {tx.receiptUrl && (
+                          <button
+                            onClick={() => onViewReceipt && onViewReceipt(tx)}
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 text-[9px] font-semibold cursor-pointer transition-colors"
+                            title="Lihat Bukti Nota"
+                          >
+                            <FileText className="w-2.5 h-2.5 text-blue-600" />
+                            <span>Nota</span>
+                          </button>
+                        )}
                       </div>
                       <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
                         <span>{formatTanggalIndo(tx.date)}</span>

@@ -8,6 +8,7 @@ import { CategoryManager } from './components/CategoryManager';
 import { TransactionModal } from './components/TransactionModal';
 import { CategoryModal } from './components/CategoryModal';
 import { BackupModal } from './components/BackupModal';
+import { ReceiptViewerModal } from './components/ReceiptViewerModal';
 import { Transaction, Category, TransactionType } from './types/finance';
 
 function MainApp() {
@@ -23,6 +24,7 @@ function MainApp() {
   const [editingCat, setEditingCat] = useState<Category | null>(null);
 
   const [backupModalOpen, setBackupModalOpen] = useState(false);
+  const [viewingReceiptTx, setViewingReceiptTx] = useState<Transaction | null>(null);
 
   // Open Transaction Modal
   const handleOpenTransactionModal = (type: TransactionType = 'pengeluaran', tx?: Transaction) => {
@@ -36,6 +38,10 @@ function MainApp() {
     setCatModalType(type);
     setEditingCat(cat || null);
     setCatModalOpen(true);
+  };
+
+  const handleViewReceipt = (tx: Transaction) => {
+    setViewingReceiptTx(tx);
   };
 
   return (
@@ -56,18 +62,21 @@ function MainApp() {
             onNavigateToReports={() => setActiveTab('reports')}
             onNavigateToTransactions={() => setActiveTab('transactions')}
             onNavigateToCategories={() => setActiveTab('categories')}
+            onViewReceipt={handleViewReceipt}
           />
         )}
 
         {activeTab === 'reports' && (
           <MonthlyReportView
             onOpenTransactionModal={(type) => handleOpenTransactionModal(type)}
+            onViewReceipt={handleViewReceipt}
           />
         )}
 
         {activeTab === 'transactions' && (
           <TransactionsView
             onOpenTransactionModal={handleOpenTransactionModal}
+            onViewReceipt={handleViewReceipt}
           />
         )}
 
@@ -103,6 +112,12 @@ function MainApp() {
       <BackupModal
         isOpen={backupModalOpen}
         onClose={() => setBackupModalOpen(false)}
+      />
+
+      <ReceiptViewerModal
+        isOpen={!!viewingReceiptTx}
+        transaction={viewingReceiptTx}
+        onClose={() => setViewingReceiptTx(null)}
       />
 
       {/* Floating Action Button for Mobile screens (positioned conveniently for thumb) */}

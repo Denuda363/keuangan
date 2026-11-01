@@ -44,7 +44,8 @@ service cloud.firestore {
         && data.accountId is string && isValidId(data.accountId)
         && data.createdAt is number
         && (!('note' in data) || (data.note is string && data.note.size() <= 500))
-        && (!('recipientOrPayer' in data) || (data.recipientOrPayer is string && data.recipientOrPayer.size() <= 128));
+        && (!('recipientOrPayer' in data) || (data.recipientOrPayer is string && data.recipientOrPayer.size() <= 128))
+        && (!('receiptUrl' in data) || (data.receiptUrl is string && data.receiptUrl.size() <= 500000));
     }
 
     function isValidCategory(data) {
