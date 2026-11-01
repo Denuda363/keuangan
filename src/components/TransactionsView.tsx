@@ -8,6 +8,7 @@ import {
   Trash2,
   ArrowUpDown,
   FileText,
+  Lock,
 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { formatRupiah, formatTanggalIndo } from '../utils/formatters';
@@ -23,7 +24,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
   onOpenTransactionModal,
   onViewReceipt,
 }) => {
-  const { transactions, categories, accounts, deleteTransaction } = useFinance();
+  const { transactions, categories, accounts, deleteTransaction, isAdmin } = useFinance();
 
   const [typeFilter, setTypeFilter] = useState<'all' | TransactionType>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -39,12 +40,19 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
       const matchType = typeFilter === 'all' || tx.type === typeFilter;
       const matchCat = categoryFilter === 'all' || tx.categoryId === categoryFilter;
       const matchAcc = accountFilter === 'all' || tx.accountId === accountFilter;
-      const cat = categoryMap.get(tx.categoryId);
+
+      const catName = categoryMap.get(tx.categoryId)?.name || '';
+      const accName = accountMap.get(tx.accountId)?.name || '';
+      const query = searchQuery.toLowerCase();
+
       const matchSearch =
-        !searchQuery ||
-        tx.note.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (cat && cat.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (tx.recipientOrPayer && tx.recipientOrPayer.toLowerCase().includes(searchQuery.toLowerCase()));
+        searchQuery === '' ||
+        tx.note?.toLowerCase().includes(query) ||
+        tx.recipientOrPayer?.toLowerCase().includes(query) ||
+        catName.toLowerCase().includes(query) ||
+        accName.toLowerCase().includes(query) ||
+        tx.date.includes(query) ||
+        tx.amount.toString().includes(query);
 
       return matchType && matchCat && matchAcc && matchSearch;
     })
@@ -79,15 +87,15 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
             onClick={() => onOpenTransactionModal('pemasukan')}
             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer min-h-[40px]"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ Uang Masuk</span>
+            {isAdmin ? <Plus className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5 text-emerald-200" />}
+            <span>{isAdmin ? '+ Uang Masuk' : '+ Masuk (PIN)'}</span>
           </button>
           <button
             onClick={() => onOpenTransactionModal('pengeluaran')}
             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer min-h-[40px]"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>- Uang Keluar</span>
+            {isAdmin ? <Plus className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5 text-rose-200" />}
+            <span>{isAdmin ? '- Uang Keluar' : '- Keluar (PIN)'}</span>
           </button>
         </div>
       </div>
@@ -127,7 +135,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
             <option value="all">Semua Kategori</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name} ({c.type === 'pemasukan' ? 'Masuk' : 'Keluar'})
+                {c.type === 'pemasukan' ? '🟢' : '🔴'} {c.name}
               </option>
             ))}
           </select>
@@ -147,33 +155,39 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
           </select>
         </div>
 
-        {/* Filter Summary Stats */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <span>Ditemukan: <strong className="text-slate-800">{filteredTransactions.length}</strong></span>
+        {/* Quick summary of filtered data */}
+        <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+          <div className="flex items-center gap-3">
+            <span>
+              Menampilkan <strong className="text-slate-800">{filteredTransactions.length}</strong> transaksi
+            </span>
             <span aria-hidden="true">·</span>
-            <span>Masuk: <strong className="text-emerald-600 font-mono">{formatRupiah(totalFilteredIncome)}</strong></span>
+            <span className="text-emerald-600 font-semibold">
+              Masuk: {formatRupiah(totalFilteredIncome)}
+            </span>
             <span aria-hidden="true">·</span>
-            <span>Keluar: <strong className="text-rose-600 font-mono">{formatRupiah(totalFilteredExpense)}</strong></span>
+            <span className="text-rose-600 font-semibold">
+              Keluar: {formatRupiah(totalFilteredExpense)}
+            </span>
           </div>
 
           <button
             onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-            className="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium cursor-pointer self-start sm:self-auto min-h-[32px]"
+            className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
-            <span>Urutkan: {sortOrder === 'desc' ? 'Terbaru ke Terlama' : 'Terlama ke Terbaru'}</span>
+            <span>Urutan: {sortOrder === 'desc' ? 'Terbaru' : 'Terlama'}</span>
           </button>
         </div>
       </div>
 
-      {/* Transactions Container: Mobile Cards (< 768px) and Desktop Table (>= 768px) */}
+      {/* Transactions List */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-        {/* Mobile View */}
+        {/* Mobile View: Clean Card List (< 768px) */}
         <div className="md:hidden divide-y divide-slate-100">
           {filteredTransactions.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-400 px-4">
-              Tidak ada transaksi yang cocok dengan kriteria filter.
+            <div className="py-12 text-center text-xs text-slate-400">
+              Tidak ada transaksi yang cocok dengan filter yang dipilih.
             </div>
           ) : (
             filteredTransactions.map((tx) => {
@@ -227,28 +241,30 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                     <p className={`font-mono text-xs font-bold ${isInc ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {isInc ? '+' : '-'} {formatRupiah(tx.amount)}
                     </p>
-                    <div className="flex items-center justify-end gap-1 mt-1">
-                      <button
-                        onClick={() => onOpenTransactionModal(tx.type, tx)}
-                        className="p-1 text-slate-400 hover:text-slate-700 rounded-md cursor-pointer min-w-[28px] min-h-[28px] flex items-center justify-center"
-                        title="Edit"
-                        aria-label="Edit"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Hapus transaksi "${tx.note || cat?.name}"?`)) {
-                            deleteTransaction(tx.id);
-                          }
-                        }}
-                        className="p-1 text-slate-400 hover:text-rose-600 rounded-md cursor-pointer min-w-[28px] min-h-[28px] flex items-center justify-center"
-                        title="Hapus"
-                        aria-label="Hapus"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    {isAdmin && (
+                      <div className="flex items-center justify-end gap-1 mt-1">
+                        <button
+                          onClick={() => onOpenTransactionModal(tx.type, tx)}
+                          className="p-1 text-slate-400 hover:text-slate-700 rounded-md cursor-pointer min-w-[28px] min-h-[28px] flex items-center justify-center"
+                          title="Edit"
+                          aria-label="Edit"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Hapus transaksi "${tx.note || cat?.name}"?`)) {
+                              deleteTransaction(tx.id);
+                            }
+                          }}
+                          className="p-1 text-slate-400 hover:text-rose-600 rounded-md cursor-pointer min-w-[28px] min-h-[28px] flex items-center justify-center"
+                          title="Hapus"
+                          aria-label="Hapus"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -256,7 +272,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
           )}
         </div>
 
-        {/* Desktop & Tablet Table */}
+        {/* Desktop & Tablet Table View (>= 768px) */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
@@ -269,13 +285,13 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                 <th className="py-3 px-4">Catatan / Penerima</th>
                 <th className="py-3 px-4 text-center w-16">Nota</th>
                 <th className="py-3 px-4 text-right">Nominal</th>
-                <th className="py-3 px-4 text-center w-20">Aksi</th>
+                {isAdmin && <th className="py-3 px-4 text-center w-20">Aksi</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={isAdmin ? 9 : 8} className="py-12 text-center text-slate-400">
                     Tidak ada transaksi yang sesuai kriteria filter.
                   </td>
                 </tr>
@@ -357,30 +373,32 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                           {isInc ? '+' : '-'} {formatRupiah(tx.amount)}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={() => onOpenTransactionModal(tx.type, tx)}
-                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
-                            title="Edit"
-                            aria-label="Edit"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (confirm(`Hapus transaksi "${tx.note || cat?.name}"?`)) {
-                                deleteTransaction(tx.id);
-                              }
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-                            title="Hapus"
-                            aria-label="Hapus"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
+                      {isAdmin && (
+                        <td className="py-3 px-4 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={() => onOpenTransactionModal(tx.type, tx)}
+                              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+                              title="Edit"
+                              aria-label="Edit"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Hapus transaksi "${tx.note || cat?.name}"?`)) {
+                                  deleteTransaction(tx.id);
+                                }
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+                              title="Hapus"
+                              aria-label="Hapus"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })

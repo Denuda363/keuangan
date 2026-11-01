@@ -18,7 +18,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   initialType = 'pengeluaran',
   editingCategory,
 }) => {
-  const { addCategory, updateCategory } = useFinance();
+  const { addCategory, updateCategory, isAdmin, openPinModal } = useFinance();
 
   const [type, setType] = useState<TransactionType>(initialType);
   const [name, setName] = useState<string>('');
@@ -50,6 +50,13 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isAdmin) {
+      openPinModal('Mode Admin diperlukan untuk menyimpan kategori.');
+      onClose();
+      return;
+    }
+
     if (!name.trim()) {
       setErrorMsg('Nama kategori wajib diisi.');
       return;

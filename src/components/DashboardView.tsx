@@ -16,11 +16,14 @@ import {
   Cloud,
   CheckCircle2,
   FileText,
+  Lock,
+  Shield,
 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { formatRupiah, formatTanggalIndo, formatBulanTahun, NAMA_BULAN_INDONESIA } from '../utils/formatters';
 import { CategoryIcon } from './CategoryIcon';
 import { Transaction, TransactionType } from '../types/finance';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface DashboardViewProps {
   onOpenTransactionModal: (type: TransactionType, tx?: Transaction) => void;
@@ -45,8 +48,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     currentYear,
     activeReport,
     deleteTransaction,
-    user,
-    signInWithGoogle,
+    isAdmin,
+    openPinModal,
   } = useFinance();
 
   // Overall Net Balance from all transactions
@@ -103,46 +106,54 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     1000000
   );
 
-  const [isConnecting, setIsConnecting] = React.useState(false);
-
-  const handleConnectGoogle = async () => {
-    setIsConnecting(true);
-    try {
-      const res = await signInWithGoogle();
-      if (res && !res.success && res.blocked) {
-        alert(res.message);
-      }
-    } catch {
-      // Handled safely without unhandled error
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
   return (
     <div className="space-y-4 sm:space-y-6 pb-20 md:pb-6">
-      {/* Cloud Sync Announcement if Guest */}
-      {!user && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+      {/* PWA App Installation Promo Banner */}
+      <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-slate-50 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Smartphone className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-bold text-slate-900">
+                Aplikasi Siap Diinstall di Semua Perangkat
+              </p>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-md">
+                PWA
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-600 mt-0.5">
+              Pasang BukuKas Pro di HP (Android & iOS), Tablet, atau PC untuk akses mandiri layar penuh dan tersimpan aman di database Supabase.
+            </p>
+          </div>
+        </div>
+        <div className="shrink-0 self-start sm:self-auto">
+          <PWAInstallButton variant="compact" />
+        </div>
+      </div>
+
+      {/* Mode Pengguna / Read-Only Banner */}
+      {!isAdmin && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-start sm:items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Cloud className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs">
+              <Lock className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-900">
-                Database Firebase Firestore Aktif
+              <p className="text-xs font-bold text-amber-900">
+                Mode Pengguna (Hanya Lihat)
               </p>
-              <p className="text-[11px] text-slate-600">
-                Data Anda saat ini tersimpan di browser ini. Masuk dengan Google untuk menyinkronkan data secara realtime di PC, Tablet, dan Ponsel.
+              <p className="text-[11px] text-amber-700">
+                Anda dapat melihat ringkasan keuangan dan rincian transaksi kas. Masuk ke Mode Admin untuk mencatat transaksi atau mengubah data.
               </p>
             </div>
           </div>
           <button
-            onClick={handleConnectGoogle}
-            disabled={isConnecting}
-            className="self-start sm:self-auto px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-xs transition-all whitespace-nowrap cursor-pointer disabled:opacity-50"
+            onClick={() => openPinModal('Masukkan PIN Admin untuk mendapatkan akses penuh mengelola kas.')}
+            className="self-start sm:self-auto px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all whitespace-nowrap cursor-pointer"
           >
-            {isConnecting ? 'Menghubungkan...' : 'Hubungkan Google'}
+            Buka Akses Admin
           </button>
         </div>
       )}
@@ -174,15 +185,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onClick={() => onOpenTransactionModal('pemasukan')}
               className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer min-h-[44px]"
             >
-              <Plus className="w-4 h-4" />
-              <span>+ Uang Masuk</span>
+              {isAdmin ? <Plus className="w-4 h-4" /> : <Lock className="w-3.5 h-3.5 text-emerald-200" />}
+              <span>{isAdmin ? '+ Uang Masuk' : '+ Masuk (PIN)'}</span>
             </button>
             <button
               onClick={() => onOpenTransactionModal('pengeluaran')}
               className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer min-h-[44px]"
             >
-              <Minus className="w-4 h-4" />
-              <span>- Uang Keluar</span>
+              {isAdmin ? <Minus className="w-4 h-4" /> : <Lock className="w-3.5 h-3.5 text-rose-200" />}
+              <span>{isAdmin ? '- Uang Keluar' : '- Keluar (PIN)'}</span>
             </button>
           </div>
 
@@ -423,28 +434,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     >
                       {isInc ? '+' : '-'} {formatRupiah(tx.amount)}
                     </span>
-                    <div className="flex items-center gap-0.5">
-                      <button
-                        onClick={() => onOpenTransactionModal(tx.type, tx)}
-                        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
-                        title="Ubah Transaksi"
-                        aria-label="Ubah"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Hapus transaksi "${tx.note || cat?.name}"?`)) {
-                            deleteTransaction(tx.id);
-                          }
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
-                        title="Hapus Transaksi"
-                        aria-label="Hapus"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    {isAdmin && (
+                      <div className="flex items-center gap-0.5">
+                        <button
+                          onClick={() => onOpenTransactionModal(tx.type, tx)}
+                          className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
+                          title="Ubah Transaksi"
+                          aria-label="Ubah"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Hapus transaksi "${tx.note || cat?.name}"?`)) {
+                              deleteTransaction(tx.id);
+                            }
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
+                          title="Hapus Transaksi"
+                          aria-label="Hapus"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

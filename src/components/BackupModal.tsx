@@ -8,7 +8,7 @@ interface BackupModalProps {
 }
 
 export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose }) => {
-  const { exportBackupData, importBackupData, resetToDefaultData } = useFinance();
+  const { exportBackupData, importBackupData, resetToDefaultData, isAdmin } = useFinance();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -56,11 +56,16 @@ export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose }) => 
     reader.readAsText(file);
   };
 
+  const [confirmReset, setConfirmReset] = useState(false);
+
   const handleResetData = async () => {
-    if (confirm('Apakah Anda yakin ingin mengatur ulang data ke data demo awal? Semua transaksi yang baru Anda catat akan dihapus.')) {
-      await resetToDefaultData();
-      setStatusMsg({ type: 'success', text: 'Data telah dikembalikan ke contoh awal.' });
+    if (!confirmReset) {
+      setConfirmReset(true);
+      return;
     }
+    await resetToDefaultData();
+    setConfirmReset(false);
+    setStatusMsg({ type: 'success', text: 'Data database Supabase telah dikembalikan ke contoh awal.' });
   };
 
   return (
@@ -117,46 +122,67 @@ export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose }) => 
             </button>
           </div>
 
-          {/* Restore Action */}
-          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold text-slate-900">Pulihkan Data (Restore)</p>
-              <p className="text-[11px] text-slate-500">
-                Impor file cadangan JSON yang telah Anda simpan sebelumnya.
-              </p>
-            </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              accept=".json"
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-100 shrink-0 transition-colors"
-            >
-              <Upload className="w-3.5 h-3.5 text-slate-500" />
-              <span>Impor</span>
-            </button>
-          </div>
+          {/* Restore & Reset Actions - Admin Only */}
+          {isAdmin ? (
+            <>
+              {/* Restore Action */}
+              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold text-slate-900">Pulihkan Data (Restore)</p>
+                  <p className="text-[11px] text-slate-500">
+                    Impor file cadangan JSON yang telah Anda simpan sebelumnya.
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept=".json"
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-100 shrink-0 transition-colors cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Impor</span>
+                </button>
+              </div>
 
-          {/* Reset Demo Data */}
-          <div className="p-4 rounded-xl border border-rose-100 bg-rose-50/50 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold text-rose-900">Muat Ulang Data Sampel</p>
-              <p className="text-[11px] text-rose-700">
-                Kembalikan semua transaksi & kategori ke contoh bawaan.
-              </p>
+              {/* Reset Demo Data */}
+              <div className="p-4 rounded-xl border border-rose-100 bg-rose-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold text-rose-900">Muat Ulang Data Sampel</p>
+                  <p className="text-[11px] text-rose-700">
+                    {confirmReset
+                      ? 'Apakah Anda yakin? Semua perubahan data di Supabase akan direset ke data sampel awal.'
+                      : 'Kembalikan semua transaksi & kategori di database Supabase ke contoh bawaan.'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {confirmReset && (
+                    <button
+                      onClick={() => setConfirmReset(false)}
+                      className="px-2.5 py-1.5 bg-white border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-100 cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                  )}
+                  <button
+                    onClick={handleResetData}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-semibold hover:bg-rose-700 shrink-0 transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>{confirmReset ? 'Ya, Reset Sekarang' : 'Reset'}</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800">
+              Fitur impor dan reset data dinonaktifkan pada Mode Pengguna. Masuk ke Mode Admin untuk memulihkan cadangan.
             </div>
-            <button
-              onClick={handleResetData}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-semibold hover:bg-rose-700 shrink-0 transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset</span>
-            </button>
-          </div>
+          )}
 
           <div className="pt-2 flex justify-end">
             <button

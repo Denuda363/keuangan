@@ -27,6 +27,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     accounts,
     addTransaction,
     updateTransaction,
+    isAdmin,
+    openPinModal,
   } = useFinance();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -137,6 +139,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isAdmin) {
+      openPinModal('Mode Admin diperlukan untuk menyimpan transaksi kas.');
+      onClose();
+      return;
+    }
+
     const amountNumber = parseRupiahInput(rawAmount);
 
     if (amountNumber <= 0) {
