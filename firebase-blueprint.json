@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile document",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "photoURL": { "type": "string", "maxLength": 512 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Record of income or expense transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "time": { "type": "string", "maxLength": 16 },
+        "type": { "type": "string", "enum": ["pemasukan", "pengeluaran"] },
+        "amount": { "type": "number" },
+        "categoryId": { "type": "string", "maxLength": 128 },
+        "accountId": { "type": "string", "maxLength": 128 },
+        "note": { "type": "string", "maxLength": 500 },
+        "recipientOrPayer": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "userId", "date", "type", "amount", "categoryId", "accountId", "createdAt"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Customizable income or expense category",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "type": { "type": "string", "enum": ["pemasukan", "pengeluaran"] },
+        "icon": { "type": "string", "maxLength": 64 },
+        "color": { "type": "string", "maxLength": 32 },
+        "description": { "type": "string", "maxLength": 256 },
+        "isCustom": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "userId", "name", "type", "icon", "color"]
+    },
+    "Account": {
+      "title": "Account",
+      "description": "Account or wallet definition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "type": { "type": "string", "enum": ["tunai", "bank", "ewallet"] },
+        "icon": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "userId", "name", "type"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Stores user profile and account preferences"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Stores income and expense records scoped to userId"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Stores customized categories scoped to userId"
+    },
+    "/accounts/{accountId}": {
+      "schema": "Account",
+      "description": "Stores customized payment accounts/wallets scoped to userId"
+    }
+  }
+}

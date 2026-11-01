@@ -1,0 +1,6 @@
+{
+  "name": "BukuKas Pro - Pengelola Uang Masuk & Keluar",
+  "description": "Aplikasi pembukuan dan pengelolaan arus kas masuk & keluar, kustomisasi kategori pemasukan dan pengeluaran, serta ekspor laporan bulanan ke Excel dan PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
