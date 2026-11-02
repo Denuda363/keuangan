@@ -182,101 +182,101 @@ export const MonthlyReportView: React.FC<MonthlyReportViewProps> = ({
         </div>
 
         {/* Prominent Export Actions Bar */}
-        <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <p className="text-xs text-slate-500">
-            Ekspor rekapitulasi data kas bulan ini langsung ke format spreadsheet Excel atau cetak PDF.
+        <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <p className="text-[11px] sm:text-xs text-slate-500">
+            Ekspor rekapitulasi data kas bulan ini ke Excel atau cetak PDF.
           </p>
 
           <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
             <button
               onClick={handleExportExcel}
               disabled={isExporting}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-xl transition-all shadow-2xs whitespace-nowrap cursor-pointer min-h-[40px]"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200/80 rounded-xl transition-all shadow-2xs whitespace-nowrap cursor-pointer min-h-[38px]"
               title="Download file spreadsheet Excel (.xlsx)"
             >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-              <span>Export Excel (.xlsx)</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
+              <span>Excel (.xlsx)</span>
             </button>
 
             <button
               onClick={handleExportPdf}
               disabled={isExporting}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 text-xs font-semibold text-rose-800 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200 rounded-xl transition-all shadow-2xs whitespace-nowrap cursor-pointer min-h-[40px]"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2 text-xs font-semibold text-rose-800 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/80 rounded-xl transition-all shadow-2xs whitespace-nowrap cursor-pointer min-h-[38px]"
               title="Download file dokumen cetak PDF (.pdf)"
             >
-              <FileText className="w-4 h-4 text-rose-600" />
-              <span>Export PDF (.pdf)</span>
+              <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-600 shrink-0" />
+              <span>PDF (.pdf)</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* KPI Cards Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* KPI Cards Strip - Compact 2x2 grid on mobile */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Total Uang Masuk */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-semibold text-slate-500">Uang Masuk</span>
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider">Uang Masuk</span>
             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
               <TrendingUp className="w-3.5 h-3.5" />
             </div>
           </div>
-          <p className="text-base sm:text-xl font-bold font-mono text-emerald-600 mt-2 truncate">
+          <p className="text-sm sm:text-xl font-bold font-mono text-emerald-600 mt-1.5 tabular-nums truncate">
             {formatRupiah(totalIncome)}
           </p>
-          <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1.5 truncate">
-            {incomeBreakdown.length} kategori aktif
+          <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
+            {incomeBreakdown.length} kategori
           </div>
         </div>
 
         {/* Total Uang Keluar */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-semibold text-slate-500">Uang Keluar</span>
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider">Uang Keluar</span>
             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
               <TrendingDown className="w-3.5 h-3.5" />
             </div>
           </div>
-          <p className="text-base sm:text-xl font-bold font-mono text-rose-600 mt-2 truncate">
+          <p className="text-sm sm:text-xl font-bold font-mono text-rose-600 mt-1.5 tabular-nums truncate">
             {formatRupiah(totalExpense)}
           </p>
-          <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1.5 truncate">
-            {expenseBreakdown.length} kategori aktif
+          <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
+            {expenseBreakdown.length} kategori
           </div>
         </div>
 
         {/* Arus Kas Bersih */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-semibold text-slate-500">Saldo Bersih</span>
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider">Saldo Bersih</span>
             <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center ${
               netSavings >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'
             }`}>
               <Scale className="w-3.5 h-3.5" />
             </div>
           </div>
-          <p className={`text-base sm:text-xl font-bold font-mono mt-2 truncate ${
+          <p className={`text-sm sm:text-xl font-bold font-mono mt-1.5 tabular-nums truncate ${
             netSavings >= 0 ? 'text-blue-700' : 'text-rose-600'
           }`}>
             {formatRupiah(netSavings)}
           </p>
-          <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1.5 truncate">
+          <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
             {netSavings >= 0 ? 'Surplus kas' : 'Defisit kas'}
           </div>
         </div>
 
         {/* Rasio Tabungan */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-semibold text-slate-500">Rasio Tabungan</span>
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider">Rasio Simpan</span>
             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
               <Percent className="w-3.5 h-3.5" />
             </div>
           </div>
-          <p className="text-base sm:text-xl font-bold font-mono text-slate-900 mt-2 truncate">
+          <p className="text-sm sm:text-xl font-bold font-mono text-slate-900 mt-1.5 tabular-nums truncate">
             {savingsRate.toFixed(1)}%
           </p>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+          <div className="w-full bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
             <div
               className={`h-full rounded-full ${savingsRate >= 20 ? 'bg-emerald-500' : savingsRate >= 0 ? 'bg-amber-500' : 'bg-rose-500'}`}
               style={{ width: `${Math.max(0, Math.min(100, savingsRate))}%` }}

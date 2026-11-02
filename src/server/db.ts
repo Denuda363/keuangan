@@ -33,7 +33,64 @@ export const SUPABASE_INFO = {
   projectId: 'dlrlfvpmpobgeimmzdcw',
   restApiUrl: 'https://dlrlfvpmpobgeimmzdcw.supabase.co/rest/v1/',
   host: 'db.dlrlfvpmpobgeimmzdcw.supabase.co',
+  publishableKey: 'sb_publishable_yzopiybjb6baTL2EU2TaQQ_s8fwpTsD',
+  anonKey:
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscmxmdnBtcG9iZ2VpbW16ZGN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MjMwMjEsImV4cCI6MjEwOTA5OTAyMX0.mdpJmhsjfrw3wX9T_Q7ogKv8ZIDGy2YechC05_uEVVo',
 };
+
+// Live round-trip connection test for Supabase PostgreSQL & REST API
+export async function testSupabaseConnection() {
+  const startTime = Date.now();
+  const client = await pool.connect();
+  try {
+    const timeQuery = await client.query('SELECT NOW() as current_time, version() as version');
+    const catCount = await client.query('SELECT COUNT(*) as count FROM categories');
+    const accCount = await client.query('SELECT COUNT(*) as count FROM accounts');
+    const txCount = await client.query('SELECT COUNT(*) as count FROM transactions');
+    const dbLatencyMs = Date.now() - startTime;
+
+    // Test REST API using user anon key
+    let restApiStatus = '200 OK';
+    let restApiLatency = 0;
+    try {
+      const restStart = Date.now();
+      const restRes = await fetch(`${SUPABASE_INFO.restApiUrl}categories?select=id&limit=1`, {
+        headers: {
+          apikey: SUPABASE_INFO.anonKey,
+          Authorization: `Bearer ${SUPABASE_INFO.anonKey}`,
+        },
+      });
+      restApiLatency = Date.now() - restStart;
+      restApiStatus = restRes.ok ? `200 OK` : `HTTP ${restRes.status}`;
+    } catch (e: any) {
+      restApiStatus = `Error: ${e.message}`;
+    }
+
+    return {
+      success: true,
+      connected: true,
+      dbLatencyMs,
+      restApiStatus,
+      restApiLatency,
+      timestamp: timeQuery.rows[0].current_time,
+      postgresVersion: (timeQuery.rows[0].version || '').split(' on ')[0],
+      counts: {
+        categories: parseInt(catCount.rows[0].count, 10),
+        accounts: parseInt(accCount.rows[0].count, 10),
+        transactions: parseInt(txCount.rows[0].count, 10),
+      },
+      info: {
+        organization: SUPABASE_INFO.organization,
+        project: SUPABASE_INFO.projectName,
+        projectId: SUPABASE_INFO.projectId,
+        restApiUrl: SUPABASE_INFO.restApiUrl,
+        host: SUPABASE_INFO.host,
+      },
+    };
+  } finally {
+    client.release();
+  }
+}
 
 // Initialize schema in Supabase
 export async function initSupabaseDb() {

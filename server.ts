@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import {
   initSupabaseDb,
   SUPABASE_INFO,
+  testSupabaseConnection,
   getAllTransactions,
   insertTransaction,
   updateTransaction,
@@ -45,6 +46,21 @@ app.get('/api/status', async (req, res) => {
     });
   } catch (err: any) {
     res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// Live Connection Test Endpoint
+app.get('/api/test-connection', async (req, res) => {
+  try {
+    const result = await testSupabaseConnection();
+    res.json(result);
+  } catch (err: any) {
+    console.error('Test connection failed:', err);
+    res.status(500).json({
+      success: false,
+      connected: false,
+      message: err.message,
+    });
   }
 });
 

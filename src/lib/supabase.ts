@@ -3,18 +3,44 @@ import { createClient } from '@supabase/supabase-js';
 // Project info provided by user:
 // Organization : Denuda
 // Project name : keuangan
+// Database password : HhkRB8lchcqIXgKi
 // Project ID : dlrlfvpmpobgeimmzdcw
 // API URL : https://dlrlfvpmpobgeimmzdcw.supabase.co/rest/v1/
+// Publishable key : sb_publishable_yzopiybjb6baTL2EU2TaQQ_s8fwpTsD
+// anon public key : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 export const SUPABASE_URL = 'https://dlrlfvpmpobgeimmzdcw.supabase.co';
 export const SUPABASE_PROJECT_ID = 'dlrlfvpmpobgeimmzdcw';
 export const SUPABASE_PROJECT_NAME = 'keuangan';
 export const SUPABASE_ORG = 'Denuda';
+export const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_yzopiybjb6baTL2EU2TaQQ_s8fwpTsD';
+export const SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscmxmdnBtcG9iZ2VpbW16ZGN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1MjMwMjEsImV4cCI6MjEwOTA5OTAyMX0.mdpJmhsjfrw3wX9T_Q7ogKv8ZIDGy2YechC05_uEVVo';
 
-// Supabase client instance (or placeholder if anon key is not directly provided in client)
-export const supabase = createClient(
-  SUPABASE_URL,
-  'public-anon-key'
-);
+// Supabase client instance initialized with official anon key
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+export interface SupabaseTestResult {
+  success: boolean;
+  connected: boolean;
+  dbLatencyMs?: number;
+  restApiStatus?: string;
+  restApiLatency?: number;
+  timestamp?: string;
+  postgresVersion?: string;
+  counts?: {
+    categories: number;
+    accounts: number;
+    transactions: number;
+  };
+  info?: {
+    organization: string;
+    project: string;
+    projectId: string;
+    restApiUrl: string;
+    host: string;
+  };
+  message?: string;
+}
 
 export interface SupabaseStatus {
   connected: boolean;
@@ -26,6 +52,18 @@ export interface SupabaseStatus {
 
 // Client API for seamless interaction with the Supabase backend
 export const api = {
+  async testConnection(): Promise<SupabaseTestResult> {
+    try {
+      const res = await fetch('/api/test-connection');
+      return await res.json();
+    } catch (err: any) {
+      return {
+        success: false,
+        connected: false,
+        message: err.message || 'Koneksi gagal',
+      };
+    }
+  },
   async getStatus(): Promise<SupabaseStatus> {
     try {
       const res = await fetch('/api/status');

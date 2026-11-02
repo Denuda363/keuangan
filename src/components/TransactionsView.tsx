@@ -225,25 +225,25 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
               return (
                 <div
                   key={tx.id}
-                  className="p-3.5 sm:p-4 hover:bg-slate-50/60 transition-colors flex items-center justify-between gap-3"
+                  className="p-3 sm:p-4 hover:bg-slate-50/60 transition-colors flex items-center justify-between gap-2.5 sm:gap-3"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                     <span
-                      className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-2xs"
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-2xs"
                       style={{ backgroundColor: cat?.color || '#64748b' }}
                     >
-                      <CategoryIcon name={cat?.icon || 'Tag'} size={16} className="text-white" />
+                      <CategoryIcon name={cat?.icon || 'Tag'} size={15} className="text-white" />
                     </span>
 
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <p className="text-xs font-semibold text-slate-900 truncate">
                           {tx.note || cat?.name || 'Transaksi Kas'}
                         </p>
                         {tx.receiptUrl && (
                           <button
                             onClick={() => onViewReceipt && onViewReceipt(tx)}
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-medium cursor-pointer transition-colors shrink-0"
+                            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 text-[9px] font-medium cursor-pointer transition-colors shrink-0"
                             title="Lihat Bukti Nota"
                           >
                             <FileText className="w-2.5 h-2.5 text-blue-600" />
@@ -252,29 +252,29 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-0.5 truncate">
+                      <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
                         <span>{formatTanggalIndo(tx.date)}</span>
                         <span aria-hidden="true">·</span>
-                        <span>{cat?.name}</span>
+                        <span className="truncate">{cat?.name}</span>
                         {acc?.name && (
                           <>
                             <span aria-hidden="true">·</span>
-                            <span className="text-slate-400">{acc.name}</span>
+                            <span className="text-slate-400 truncate">{acc.name}</span>
                           </>
                         )}
                         {tx.recipientOrPayer && (
                           <>
                             <span aria-hidden="true">·</span>
-                            <span className="text-slate-400 truncate max-w-[120px]">{tx.recipientOrPayer}</span>
+                            <span className="text-slate-400 truncate max-w-[100px] sm:max-w-[140px]">{tx.recipientOrPayer}</span>
                           </>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                  <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
                     <span
-                      className={`font-mono text-xs sm:text-sm font-semibold tabular-nums ${
+                      className={`font-mono text-xs sm:text-sm font-semibold tabular-nums whitespace-nowrap ${
                         isInc ? 'text-emerald-600' : 'text-rose-600'
                       }`}
                     >

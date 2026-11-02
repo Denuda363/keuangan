@@ -106,28 +106,34 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ onOpenCategory
               setActiveTab('pengeluaran');
               setDeleteError(null);
             }}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
               activeTab === 'pengeluaran'
                 ? 'bg-white text-rose-700 font-semibold shadow-2xs'
                 : 'hover:text-slate-900'
             }`}
           >
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>Pengeluaran ({expenseCategories.length})</span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-rose-500" />
+            <span>
+              <span className="hidden xs:inline">Pengeluaran</span>
+              <span className="xs:hidden">Keluar</span> ({expenseCategories.length})
+            </span>
           </button>
           <button
             onClick={() => {
               setActiveTab('pemasukan');
               setDeleteError(null);
             }}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
               activeTab === 'pemasukan'
                 ? 'bg-white text-emerald-700 font-semibold shadow-2xs'
                 : 'hover:text-slate-900'
             }`}
           >
-            <ArrowDownRight className="w-3.5 h-3.5" />
-            <span>Pemasukan ({incomeCategories.length})</span>
+            <ArrowDownRight className="w-3.5 h-3.5 text-emerald-500" />
+            <span>
+              <span className="hidden xs:inline">Pemasukan</span>
+              <span className="xs:hidden">Masuk</span> ({incomeCategories.length})
+            </span>
           </button>
         </div>
 

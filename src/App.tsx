@@ -24,6 +24,8 @@ function MainApp() {
     openPinModal,
     pinSettingsModalOpen,
     closePinSettingsModal,
+    openSupabaseModal,
+    supabaseInfo,
   } = useFinance();
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'reports' | 'transactions' | 'categories'>('dashboard');
@@ -84,8 +86,8 @@ function MainApp() {
         onOpenBackupModal={() => setBackupModalOpen(true)}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Main Content Area - Optimized for mobile viewports */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-8">
         {activeTab === 'dashboard' && (
           <DashboardView
             onOpenTransactionModal={handleOpenTransactionModal}
@@ -166,8 +168,17 @@ function MainApp() {
       <footer className="border-t border-slate-200 bg-white py-5 text-center text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p>© {new Date().getFullYear()} BukuKas Pro · Sistem Kas Masuk & Kas Keluar</p>
-          <div className="flex items-center gap-4 text-slate-500">
-            <span>Mode Keamanan PIN Terproteksi</span>
+          <div className="flex items-center gap-3 text-slate-500">
+            <button
+              onClick={openSupabaseModal}
+              className="inline-flex items-center gap-1.5 hover:text-emerald-700 transition-colors cursor-pointer"
+              title="Periksa status & uji koneksi Supabase Cloud (Denuda)"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>Supabase Cloud: {supabaseInfo.project}</span>
+            </button>
+            <span aria-hidden="true">·</span>
+            <span>Mode PIN</span>
             <span aria-hidden="true">·</span>
             <button
               onClick={() => {
